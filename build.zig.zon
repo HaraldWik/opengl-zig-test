@@ -1,0 +1,26 @@
+.{
+    .name = .opengl_zig_test,
+    .version = "0.0.0",
+    .fingerprint = 0x935d4be3028ff242,
+    .minimum_zig_version = "0.15.0-dev.1380+e98aeeb73",
+    .dependencies = .{
+        .sdl = .{
+            .url = "git+https://github.com/castholm/SDL#1994ca5dbad5a3e3c670a9ab8533d86cfd97bdc0",
+            .hash = "sdl-0.2.6+3.2.20-7uIn9NgjfwHH5a6HhyLHat2nHU3OP5B05QHhKJKuxEex",
+        },
+        .zigglgen = .{
+            .url = "git+https://github.com/castholm/zigglgen.git#595c65dcc7e4e194e405a6b8c98fe122e94c0b69",
+            .hash = "zigglgen-0.4.0-bmyqLejsLQCuWyKLwAy7X93Kz4rvYJ_VBL8O63o1wJ-R",
+        },
+        .numz = .{
+            .url = "git+https://github.com/HaraldWik/numz#8e4bb613f8d081632d33ed88756c8319698f4715",
+            .hash = "numz-0.0.1-V-sGmxtiAAAANG2wnFr9AMkA_O70XnqacrYY85INWCeO",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "README.md",
+    },
+}

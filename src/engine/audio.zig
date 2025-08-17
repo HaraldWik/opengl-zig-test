@@ -48,6 +48,9 @@ pub const Sound = struct {
         c.SDL_free(@ptrCast(self.ptr));
     }
 
+    // pub fn playInstance(self: @This()) void {
+    // }
+
     pub fn play(self: @This(), volume: f32) !void {
         var buffer: [1028 * 10 * 10 * 10]u8 = undefined;
         @memcpy(buffer[0..self.len], self.ptr[0..self.len]);
@@ -64,6 +67,8 @@ pub const Sound = struct {
 
             std.mem.writeInt(i16, bytes, sample, .little);
         }
+
+        // _ = c.SDL_SetAudioStreamGain(stream: ?*struct_SDL_AudioStream, gain: f32)
 
         const queue_size: usize = @intCast(c.SDL_GetAudioStreamAvailable(self.stream));
         if (queue_size < self.len * 8) try sdlCheck(c.SDL_PutAudioStreamData(self.stream, &buffer, @intCast(self.len)));

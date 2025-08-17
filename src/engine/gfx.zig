@@ -2,8 +2,6 @@ const std = @import("std");
 const c = @import("c");
 const gl = @import("gl");
 
-// ...
-
 pub const Context = struct {
     window: ?*c.SDL_Window,
     var procs: gl.ProcTable = undefined;
@@ -141,7 +139,7 @@ pub const Pipeline = struct {
         if (success != gl.TRUE) {
             var info_log: [512]u8 = undefined;
             gl.GetShaderInfoLog(shader, info_log.len, null, &info_log);
-            c.err("Shader compile error: {s}", .{info_log});
+            std.log.err("Shader compile error: {s}", .{info_log});
             gl.DeleteShader(shader);
             return error.ShaderCompilation;
         }
@@ -156,12 +154,10 @@ pub const VertexAttribute = struct {
         f32 = gl.FLOAT,
         f16 = gl.HALF_FLOAT,
 
-        i64 = gl.INT64_ARB, // (ARB extension)
         i32 = gl.INT,
         i16 = gl.SHORT,
         i8 = gl.BYTE,
 
-        u64 = gl.UNSIGNED_INT64_ARB, // (ARB extension)
         u32 = gl.UNSIGNED_INT,
         u16 = gl.UNSIGNED_SHORT,
         u8 = gl.UNSIGNED_BYTE,
@@ -173,11 +169,9 @@ pub const VertexAttribute = struct {
             .f64 => f64,
             .f32 => f32,
             .f16 => f16,
-            .i64 => i64,
             .i32 => i32,
             .i16 => i16,
             .i8 => i8,
-            .u64 => u64,
             .u32 => u32,
             .u16 => u16,
             .u8 => u8,
@@ -191,7 +185,7 @@ pub const Mesh = struct {
     ebo: u32,
     index_count: usize,
 
-    pub fn init(comptime vertex_attributes: []VertexAttribute, vertices: []f32, indices: []u32) !@This() {
+    pub fn init(comptime vertex_attributes: []const VertexAttribute, vertices: []f32, indices: []u32) !@This() {
         var vao: u32 = undefined;
         var vbo: u32 = undefined;
         var ebo: u32 = undefined;

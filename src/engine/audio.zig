@@ -32,7 +32,7 @@ pub const Sound = struct {
         try sdlCheck(c.SDL_LoadWAV(file_path, &spec, @ptrCast(&ptr), &len));
 
         const streams = try allocator.alloc(?*c.SDL_AudioStream, 16);
-        @memset(streams, null); // Initialize all streams to null
+        @memset(streams, null);
 
         return .{
             .device = device,
@@ -48,7 +48,6 @@ pub const Sound = struct {
         for (self.streams) |stream| {
             if (stream != null) c.SDL_DestroyAudioStream(stream.?);
         }
-
         self.allocator.free(self.streams);
         c.SDL_free(@ptrCast(self.ptr));
     }
@@ -56,13 +55,13 @@ pub const Sound = struct {
     pub fn play(self: @This(), volume: f32) !void {
         var free_stream: ?*c.SDL_AudioStream = null;
 
-        for (self.streams) |*stream_ptr| {
-            const current_stream = stream_ptr.*;
+        for (self.streams) |*stream| {
+            const current_stream = stream.*;
             if (current_stream == null) {
                 const new_stream = c.SDL_CreateAudioStream(&self.spec, null);
                 try sdlCheck(new_stream);
                 try sdlCheck(c.SDL_BindAudioStream(self.device.id, new_stream));
-                stream_ptr.* = new_stream;
+                stream.* = new_stream;
                 free_stream = new_stream;
                 break;
             }

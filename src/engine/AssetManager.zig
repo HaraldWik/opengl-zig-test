@@ -52,9 +52,9 @@ pub fn loadSound(allocator: std.mem.Allocator, audio_device: ?audio.Device, file
     return sound;
 }
 
-pub fn getTexture(self: @This(), key: []const u8) ?gfx.Texture {
+pub fn getTexture(self: @This(), key: []const u8) gfx.Texture {
     const hash: u64 = std.hash.Wyhash.hash(0, key);
-    return self.textures.get(hash);
+    return self.textures.get(hash) orelse return .{ .id = std.math.maxInt(u32) };
 }
 
 pub fn getModel(self: @This(), key: []const u8) ?gfx.Model {
@@ -62,9 +62,9 @@ pub fn getModel(self: @This(), key: []const u8) ?gfx.Model {
     return self.models.get(hash);
 }
 
-pub fn getSound(self: @This(), key: []const u8) ?audio.Sound {
+pub fn getSound(self: @This(), key: []const u8) audio.Sound {
     const hash: u64 = std.hash.Wyhash.hash(0, key);
-    return self.sounds.get(hash);
+    return self.sounds.get(hash) orelse @panic("sound asset not found");
 }
 
 fn loadAssets(

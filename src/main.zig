@@ -44,8 +44,10 @@ pub fn main() !void {
         if (window.isKeyDown(.up)) volume += 0.01;
         if (window.isKeyDown(.down)) volume -= 0.01;
 
-        volume = @max(0, volume);
-        try asset_manager.getSound("bell.wav").?.play(volume);
+        if (window.isKeyDown(.o)) {
+            volume = @max(0, volume);
+            try asset_manager.getSound("bell.wav").play(volume);
+        }
 
         // std.debug.print("{d:.1}%\n", .{volume * 100});
     }

@@ -52,25 +52,25 @@ pub const Sound = struct {
     // }
 
     pub fn play(self: @This(), volume: f32) !void {
-        var buffer: [1028 * 10 * 10 * 10]u8 = undefined;
-        @memcpy(buffer[0..self.len], self.ptr[0..self.len]);
+        // var buffer: [1028 * 10 * 10 * 10]u8 = undefined;
+        // @memcpy(buffer[0..self.len], self.ptr[0..self.len]);
 
-        for (0..@intCast(self.len / 2)) |i| {
-            const bytes = buffer[i * 2 .. (i * 2 + 2)][0..2];
+        // for (0..@intCast(self.len / 2)) |i| {
+        //     const bytes = buffer[i * 2 .. (i * 2 + 2)][0..2];
 
-            var sample = std.mem.readInt(i16, bytes, .little);
+        //     var sample = std.mem.readInt(i16, bytes, .little);
 
-            sample = if (volume <= 1)
-                @intFromFloat(std.math.round(@as(f32, @floatFromInt(sample)) * (volume)))
-            else
-                @intFromFloat(std.math.round(std.math.tanh(@as(f32, @floatFromInt(sample)) / std.math.maxInt(i16) * volume) * std.math.maxInt(i16)));
+        //     sample = if (volume <= 1)
+        //         @intFromFloat(std.math.round(@as(f32, @floatFromInt(sample)) * (volume)))
+        //     else
+        //         @intFromFloat(std.math.round(std.math.tanh(@as(f32, @floatFromInt(sample)) / std.math.maxInt(i16) * volume) * std.math.maxInt(i16)));
 
-            std.mem.writeInt(i16, bytes, sample, .little);
-        }
+        //     std.mem.writeInt(i16, bytes, sample, .little);
+        // }
 
-        // _ = c.SDL_SetAudioStreamGain(stream: ?*struct_SDL_AudioStream, gain: f32)
+        _ = c.SDL_SetAudioStreamGain(self.stream, volume);
 
         const queue_size: usize = @intCast(c.SDL_GetAudioStreamAvailable(self.stream));
-        if (queue_size < self.len * 8) try sdlCheck(c.SDL_PutAudioStreamData(self.stream, &buffer, @intCast(self.len)));
+        if (queue_size < self.len * 8) try sdlCheck(c.SDL_PutAudioStreamData(self.stream, @ptrCast(self.ptr), @intCast(self.len)));
     }
 };

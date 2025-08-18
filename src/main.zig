@@ -6,8 +6,9 @@ const gl = @import("gl");
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    const window: *engine.Window = try .init("Super windows world", 900, 900);
+    const window: *engine.Window = try .init("super-windows-world", 900, 900);
     defer window.deinit();
+
     const audio_device: engine.audio.Device = try .init();
     defer audio_device.deinit();
 
@@ -36,20 +37,19 @@ pub fn main() !void {
     }, &vertices, &indices);
 
     while (!window.shouldClose()) {
-        if (window.isKeyDown(.up)) volume += 0.001;
-        if (window.isKeyDown(.down)) volume -= 0.001;
-
-        volume = @max(0, volume);
-        try asset_manager.getSound("bell.wav").?.play(volume);
-
-        // std.debug.print("{d:.1}%\n", .{volume * 100});
-
-        pipeline.bind();
-
         try gfx_context.clear();
 
+        pipeline.bind();
         mesh.draw();
 
         try gfx_context.present();
+
+        if (window.isKeyDown(.up)) volume += 0.001;
+        if (window.isKeyDown(.down)) volume -= 0.001;
+
+        // volume = @max(0, volume);
+        // try asset_manager.getSound("bell.wav").?.play(volume);
+
+        // std.debug.print("{d:.1}%\n", .{volume * 100});
     }
 }

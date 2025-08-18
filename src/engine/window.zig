@@ -2,71 +2,61 @@ const std = @import("std");
 const c = @import("c");
 const sdlCheck = @import("root.zig").sdlCheck;
 
-pub const Window = opaque {
-    pub inline fn toC(self: *@This()) *c.SDL_Window {
-        return @ptrCast(self);
+handle: *c.SDL_Window,
+
+pub fn init(title: [*:0]const u8, width: usize, height: usize) !@This() {
+    try sdlCheck(c.SDL_Init(c.SDL_INIT_VIDEO | c.SDL_INIT_EVENTS | c.SDL_INIT_AUDIO));
+
+    const window = c.SDL_CreateWindow(title, @intCast(width), @intCast(height), c.SDL_WINDOW_OPENGL | c.SDL_WINDOW_RESIZABLE);
+    try sdlCheck(window);
+
+    return .{ .handle = window.? };
+}
+
+pub fn deinit(self: @This()) void {
+    c.SDL_DestroyWindow(self.handle);
+    c.SDL_Quit();
+}
+
+pub fn shouldClose(_: @This()) bool {
+    var event: c.SDL_Event = undefined;
+    while (c.SDL_PollEvent(&event)) {
+        switch (event.type) {
+            c.SDL_EVENT_QUIT, c.SDL_EVENT_TERMINATING => return true,
+            else => {},
+        }
     }
+    return false;
+}
 
-    pub fn init(title: [*:0]const u8, width: usize, height: usize) !*@This() {
-        try sdlCheck(c.SDL_Init(c.SDL_INIT_VIDEO | c.SDL_INIT_AUDIO));
+pub fn getSize(self: @This()) !struct { usize, usize } {
+    var size: struct { c_int, c_int } = undefined;
+    try sdlCheck(c.SDL_GetWindowSize(self.handle, &size.@"0", &size.@"1"));
+    return .{ @intCast(size.@"0"), @intCast(size.@"1") };
+}
 
-        const window = c.SDL_CreateWindow(title, @intCast(width), @intCast(height), c.SDL_WINDOW_OPENGL | c.SDL_WINDOW_RESIZABLE);
-        try sdlCheck(window);
+pub fn getAspect(self: @This()) !f32 {
+    const width, const height: usize = try self.getSize();
+    return @as(f32, @floatFromInt(width)) / @as(f32, @floatFromInt(height));
+}
 
-        return @ptrCast(window.?);
-    }
+pub fn getDeltaTime(_: @This()) f32 {
+    const Static = struct {
+        var last_time: u64 = 0;
+    };
+    const now = c.SDL_GetPerformanceCounter();
+    const freq = c.SDL_GetPerformanceFrequency();
+    const delta_time = @as(f32, @floatFromInt(now - Static.last_time)) / @as(f32, @floatFromInt(freq));
+    Static.last_time = now;
+    return delta_time;
+}
 
-    pub fn deinit(self: *@This()) void {
-        c.SDL_DestroyWindow(self.toC());
-        c.SDL_Quit();
-    }
+pub inline fn isKeyDown(_: @This(), key: Key) bool {
+    const keyboard = c.SDL_GetKeyboardState(null) orelse return false;
+    return keyboard[@intFromEnum(key)];
+}
 
-    pub fn shouldClose(_: *@This()) bool {
-        var event: c.SDL_Event = undefined;
-        return while (c.SDL_PollEvent(&event)) {
-            break switch (event.type) {
-                c.SDL_EVENT_QUIT, c.SDL_EVENT_TERMINATING => true,
-                else => false,
-            };
-        } else false;
-    }
-
-    pub fn getSize(self: *@This()) !struct { usize, usize } {
-        var size: struct { c_int, c_int } = undefined;
-        try sdlCheck(c.SDL_GetWindowSize(self.toC(), &size.@"0", &size.@"1"));
-        return .{ @intCast(size.@"0"), @intCast(size.@"1") };
-    }
-
-    pub fn getAspect(self: *@This()) !f32 {
-        var width: c_int = undefined;
-        var height: c_int = undefined;
-        if (!c.SDL_GetWindowSize(self.toC(), &width, &height)) return error.SdlGetWindowSize;
-        return @as(f32, @floatFromInt(width)) / @as(f32, @floatFromInt(height));
-    }
-
-    pub fn getDeltaTime(_: *@This()) f32 {
-        const Static = struct {
-            var last_time: u64 = 0;
-        };
-        const now = c.SDL_GetPerformanceCounter();
-        const freq = c.SDL_GetPerformanceFrequency();
-        const delta_time = @as(f32, @floatFromInt(now - Static.last_time)) / @as(f32, @floatFromInt(freq));
-        Static.last_time = now;
-        return delta_time;
-    }
-
-    pub fn isKeyDown(_: *@This(), key: Key) bool {
-        var len: c_int = undefined;
-        const ptr = c.SDL_GetKeyboardState(&len);
-
-        const scancode = @intFromEnum(key);
-        if (scancode < 0 or scancode >= len) return false;
-
-        return ptr[@intCast(scancode)];
-    }
-};
-
-pub const Key = enum(c_int) {
+pub const Key = enum(usize) {
     // Letters
     a = c.SDL_SCANCODE_A,
     b = c.SDL_SCANCODE_B,

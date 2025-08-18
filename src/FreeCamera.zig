@@ -2,17 +2,17 @@ const std = @import("std");
 const engine = @import("engine");
 const nz = @import("numz");
 
-transform: engine.Transform = .{},
+transform: nz.Transform(f32) = .{},
 sensitivity: f32,
 speed: f32,
 was_rotating: bool = false,
 
 pub fn update(
     self: *@This(),
-    window: *engine.Window,
+    window: engine.Window,
     pipeline: engine.gfx.Pipeline,
 ) !void {
-    std.debug.print("{any}\n", .{self.transform});
+    if (window.isKeyDown(.p)) std.debug.print("{any}\n", .{self.transform});
     const pitch = &self.transform.rotation[0];
     const yaw = &self.transform.rotation[1];
 
@@ -22,7 +22,7 @@ pub fn update(
     var relative_y: f32 = undefined;
     _ = engine.c.SDL_GetRelativeMouseState(&relative_x, &relative_y);
 
-    if (mouse == engine.c.SDL_BUTTON_RIGHT) {
+    if (mouse & engine.c.SDL_BUTTON_LEFT == 1) {
         if (!engine.c.SDL_HideCursor()) return error.SdlHideCursor;
 
         yaw.* += relative_x * self.sensitivity;
@@ -39,13 +39,13 @@ pub fn update(
     const yaw_rad = std.math.degreesToRadians(yaw.*);
     const pitch_rad = std.math.degreesToRadians(pitch.*);
 
-    const forward = nz.vec.normalize(nz.Vec3(f32){
+    const forward: nz.Vec3(f32) = nz.vec.normalize(nz.Vec3(f32){
         @cos(pitch_rad) * @sin(yaw_rad),
         -@sin(pitch_rad),
         -@cos(pitch_rad) * @cos(yaw_rad),
     });
 
-    const right = nz.vec.normalize(nz.vec.cross(forward, nz.Vec3(f32){ 0, 1, 0 }));
+    const right: nz.Vec3(f32) = nz.vec.normalize(nz.vec.cross(forward, .{ 0, 1, 0 }));
 
     const up = nz.vec.normalize(nz.vec.cross(right, forward));
 
@@ -64,7 +64,7 @@ pub fn update(
     // if (keyboard[sdl.SDL_SCANCODE_DOWN])
     //     camera.speed -= 10;
 
-    const speed_multiplier: f32 = if (!window.isKeyDown(.lshift)) 1 else 2;
+    const speed_multiplier: f32 = if (!window.isKeyDown(.lshift)) 1 else 4;
 
     self.speed = std.math.clamp(self.speed, 0, 1000);
 
@@ -81,7 +81,7 @@ pub fn update(
     view = view.mul(.rotate(std.math.degreesToRadians(yaw.*), .{ 0, 1, 0 }));
     view = view.mul(.translate(self.transform.position));
 
-    const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try window.getAspect(), 4, 4000.0);
+    const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try window.getAspect(), 0.1, 4000.0);
 
     try pipeline.setUniform("u_projection", .{ .mat4x4 = projection.d });
     try pipeline.setUniform("u_view", .{ .mat4x4 = view.d });

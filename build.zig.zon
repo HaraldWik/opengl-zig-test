@@ -13,8 +13,8 @@
             .hash = "zigglgen-0.4.0-bmyqLejsLQCuWyKLwAy7X93Kz4rvYJ_VBL8O63o1wJ-R",
         },
         .numz = .{
-            .url = "git+https://github.com/HaraldWik/numz#e6eab9a9922963944e906a642979c585ac90e8f3",
-            .hash = "numz-0.0.1-V-sGm91qAABIaj3glIxbdCG8XxwyK3JLEuJ90RpL-c9j",
+            .url = "git+https://github.com/HaraldWik/numz#3fe90d57b738e282b4fa8998423168acf989b114",
+            .hash = "numz-0.0.1-V-sGm5RtAAB1cI0O5NbPpNSER3tciAlXW73wue6WmyWe",
         },
     },
     .paths = .{

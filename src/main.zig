@@ -6,13 +6,13 @@ const gl = @import("gl");
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    const window: *engine.Window = try .init("super-windows-world", 900, 900);
+    const window: engine.Window = try .init("super-windows-world", 900, 900);
     defer window.deinit();
 
     const audio_device: engine.audio.Device = try .init();
     defer audio_device.deinit();
 
-    const gfx_context: engine.gfx.Context = try .init(window.toC());
+    const gfx_context: engine.gfx.Context = try .init(window.handle);
     defer gfx_context.deinit();
 
     const asset_manager: engine.AssetManager = try .init(allocator, audio_device);
@@ -23,7 +23,7 @@ pub fn main() !void {
     const pipeline: engine.gfx.Pipeline = try .init(@embedFile("shaders/def.vert"), @embedFile("shaders/def.frag"), null);
     defer pipeline.deinit();
 
-    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.5, .speed = 50 };
+    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 50 };
 
     const obj: engine.Obj = try .init(allocator, "assets/models/cube.obj");
     defer obj.deinit(allocator);
@@ -34,7 +34,7 @@ pub fn main() !void {
         .{ .type = .f32, .count = 3 },
     }, obj.vertices, obj.indices);
 
-    var transform: engine.Transform = .{};
+    var transform: nz.Transform(f32) = .{ .scale = @splat(0.1) };
 
     while (!window.shouldClose()) {
         engine.c.SDL_Delay(16);

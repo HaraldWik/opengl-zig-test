@@ -47,8 +47,8 @@ pub fn loadModel(allocator: std.mem.Allocator, _: ?*anyopaque, file_path: []cons
     return model;
 }
 
-pub fn loadSound(_: std.mem.Allocator, audio_device: ?audio.Device, file_path: []const u8) !audio.Sound {
-    const sound: audio.Sound = try .init(audio_device.?, @ptrCast(file_path));
+pub fn loadSound(allocator: std.mem.Allocator, audio_device: ?audio.Device, file_path: []const u8) !audio.Sound {
+    const sound: audio.Sound = try .init(allocator, audio_device.?, @ptrCast(file_path));
     return sound;
 }
 

@@ -49,8 +49,8 @@ pub const Sound = struct {
             if (stream != null) c.SDL_DestroyAudioStream(stream.?);
         }
 
-        self.allocator.free(self.streams); // Free the heap-allocated stream array
-        c.SDL_free(@ptrCast(self.ptr)); // Free the audio data from SDL
+        self.allocator.free(self.streams);
+        c.SDL_free(@ptrCast(self.ptr));
     }
 
     pub fn play(self: @This(), volume: f32) !void {
@@ -59,7 +59,6 @@ pub const Sound = struct {
         for (self.streams) |*stream_ptr| {
             const current_stream = stream_ptr.*;
             if (current_stream == null) {
-                // Found an empty slot, create a new stream for it
                 const new_stream = c.SDL_CreateAudioStream(&self.spec, null);
                 try sdlCheck(new_stream);
                 try sdlCheck(c.SDL_BindAudioStream(self.device.id, new_stream));
@@ -68,7 +67,6 @@ pub const Sound = struct {
                 break;
             }
             if (c.SDL_GetAudioStreamAvailable(current_stream) == 0) {
-                // Found a used but now empty stream
                 free_stream = current_stream;
                 break;
             }

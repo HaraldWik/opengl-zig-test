@@ -37,6 +37,24 @@ pub const Window = opaque {
         return .{ @intCast(size.@"0"), @intCast(size.@"1") };
     }
 
+    pub fn getAspect(self: *@This()) !f32 {
+        var width: c_int = undefined;
+        var height: c_int = undefined;
+        if (!c.SDL_GetWindowSize(self.toC(), &width, &height)) return error.SdlGetWindowSize;
+        return @as(f32, @floatFromInt(width)) / @as(f32, @floatFromInt(height));
+    }
+
+    pub fn getDeltaTime(_: *@This()) f32 {
+        const Static = struct {
+            var last_time: u64 = 0;
+        };
+        const now = c.SDL_GetPerformanceCounter();
+        const freq = c.SDL_GetPerformanceFrequency();
+        const delta_time = @as(f32, @floatFromInt(now - Static.last_time)) / @as(f32, @floatFromInt(freq));
+        Static.last_time = now;
+        return delta_time;
+    }
+
     pub fn isKeyDown(_: *@This(), key: Key) bool {
         var len: c_int = undefined;
         const ptr = c.SDL_GetKeyboardState(&len);

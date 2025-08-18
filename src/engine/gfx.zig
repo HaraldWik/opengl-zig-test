@@ -124,7 +124,7 @@ pub const Pipeline = struct {
             .f64x3 => |d| gl.ProgramUniform3d(self.program, location, d[0], d[1], d[2]),
             .f32x4 => |d| gl.ProgramUniform4f(self.program, location, d[0], d[1], d[2], d[3]),
             .f64x4 => |d| gl.ProgramUniform4d(self.program, location, d[0], d[1], d[2], d[3]),
-            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, c.false, @ptrCast(&d.@"0")),
+            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, c.false, @ptrCast(&d)),
         }
     }
 

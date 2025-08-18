@@ -25,14 +25,7 @@ pub fn main() !void {
 
     var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 120, .transform = .{ .position = .{ 0.0, 0.0, -5.0 } } };
 
-    const obj: engine.Obj = try .init(allocator, "assets/models/cube.obj");
-    defer obj.deinit(allocator);
-
-    const mesh: engine.gfx.Mesh = try .init(&.{
-        .{ .type = .f32, .count = 3 },
-        .{ .type = .f32, .count = 2 },
-        .{ .type = .f32, .count = 3 },
-    }, obj.vertices, obj.indices);
+    const model: engine.gfx.Model = asset_manager.getModel("cube.obj").?;
 
     var transform: nz.Transform(f32) = .{ .scale = @splat(0.1) };
 
@@ -44,7 +37,7 @@ pub fn main() !void {
         pipeline.bind();
         try pipeline.setUniform("u_model", .{ .mat4x4 = transform.toMat4x4().d });
         try free_camera.update(window, pipeline);
-        mesh.draw();
+        model.draw();
 
         try gfx_context.present();
 

@@ -179,7 +179,7 @@ pub const VertexAttribute = struct {
     }
 };
 
-pub const Mesh = struct {
+pub const Model = struct {
     vao: u32,
     vbo: u32,
     ebo: u32,

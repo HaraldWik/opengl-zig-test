@@ -23,7 +23,7 @@ pub fn main() !void {
     const pipeline: engine.gfx.Pipeline = try .init(@embedFile("shaders/def.vert"), @embedFile("shaders/def.frag"), null);
     defer pipeline.deinit();
 
-    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 50 };
+    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 120, .transform = .{ .position = .{ 0.0, 0.0, -5.0 } } };
 
     const obj: engine.Obj = try .init(allocator, "assets/models/cube.obj");
     defer obj.deinit(allocator);

@@ -9,8 +9,9 @@ was_rotating: bool = false,
 
 pub fn update(
     self: *@This(),
-    window: engine.Window,
     pipeline: engine.gfx.Pipeline,
+    window: engine.Window,
+    delta_time: f32,
 ) !void {
     if (window.isKeyDown(.p)) std.debug.print("{any}\n", .{self.transform});
     const pitch = &self.transform.rotation[0];
@@ -22,7 +23,7 @@ pub fn update(
     var relative_y: f32 = undefined;
     _ = engine.c.SDL_GetRelativeMouseState(&relative_x, &relative_y);
 
-    if (mouse & engine.c.SDL_BUTTON_LEFT == 1) {
+    if (mouse == 4) {
         if (!engine.c.SDL_HideCursor()) return error.SdlHideCursor;
 
         yaw.* += relative_x * self.sensitivity;
@@ -50,7 +51,7 @@ pub fn update(
     const up = nz.vec.normalize(nz.vec.cross(right, forward));
 
     var move = nz.Vec3(f32){ 0, 0, 0 };
-    const velocity = self.speed * window.getDeltaTime();
+    const velocity = self.speed * delta_time;
 
     if (window.isKeyDown(.w)) move -= nz.vec.scale(forward, velocity);
     if (window.isKeyDown(.s)) move += nz.vec.scale(forward, velocity);
@@ -81,7 +82,7 @@ pub fn update(
     view = view.mul(.rotate(std.math.degreesToRadians(yaw.*), .{ 0, 1, 0 }));
     view = view.mul(.translate(self.transform.position));
 
-    const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try window.getAspect(), 0.1, 4000.0);
+    const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try window.getAspect(), 1, 500.0);
 
     try pipeline.setUniform("u_projection", .{ .mat4x4 = projection.d });
     try pipeline.setUniform("u_view", .{ .mat4x4 = view.d });

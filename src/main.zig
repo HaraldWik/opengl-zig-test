@@ -25,19 +25,37 @@ pub fn main() !void {
 
     var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 120, .transform = .{ .position = .{ 0.0, 0.0, -5.0 } } };
 
-    const model: engine.gfx.Model = asset_manager.getModel("cube.obj").?;
+    const cube = asset_manager.getModel("cube.obj");
 
-    var transform: nz.Transform(f32) = .{ .scale = @splat(0.1) };
+    const terrain: @import("Terrain.zig") = try .init(allocator, .{ 100, 100 });
+    defer terrain.deinit(allocator);
+    const terrain_model = try terrain.toModel(allocator);
 
+    var time: f32 = 0;
     while (!window.shouldClose()) {
-        engine.c.SDL_Delay(16);
-        transform.rotation[1] = @mod(transform.rotation[1] + 30 * window.getDeltaTime(), 360);
+        const delta_time = window.getDeltaTime();
+        time += delta_time;
         try gfx_context.clear();
 
+        // std.debug.print("FPS: {d:.2}\n", .{1 / delta_time});
+
         pipeline.bind();
-        try pipeline.setUniform("u_model", .{ .mat4x4 = transform.toMat4x4().d });
-        try free_camera.update(window, pipeline);
-        model.draw();
+
+        for (0..100) |i| {
+            const f: f32 = @floatFromInt(i);
+            var transform: nz.Transform(f32) = .{ .position = .{ std.math.round(@mod(f, 10) * 3), @sin(time + f), std.math.round(f / 10 * 3) } };
+
+            transform.rotation = @splat(@mod(transform.rotation[1] + 30 * window.getDeltaTime(), 360));
+            asset_manager.getTexture("error_wall.jpg").bind(0);
+            try pipeline.setUniform("u_model", .{ .mat4x4 = transform.toMat4x4().d });
+            cube.draw();
+        }
+
+        asset_manager.getTexture("grass.jpg").bind(0);
+        try pipeline.setUniform("u_model", .{ .mat4x4 = nz.Transform(f32).toMat4x4(.{}).d });
+        terrain_model.draw();
+
+        try free_camera.update(pipeline, window, delta_time);
 
         try gfx_context.present();
 

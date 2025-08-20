@@ -20,7 +20,7 @@ pub fn deinit(self: @This()) void {
     var texture_it = self.textures.iterator();
     while (texture_it.next()) |entry| entry.value_ptr.deinit();
 
-    var model_it = self.textures.iterator();
+    var model_it = self.models.iterator();
     while (model_it.next()) |entry| entry.value_ptr.deinit();
 
     var sound_it = self.sounds.iterator();
@@ -52,19 +52,19 @@ pub fn loadSound(allocator: std.mem.Allocator, audio_device: ?audio.Device, file
     return sound;
 }
 
-pub fn getTexture(self: @This(), key: []const u8) gfx.Texture {
+pub fn getTexture(self: @This(), key: []const u8) *gfx.Texture {
     const hash: u64 = std.hash.Wyhash.hash(0, key);
-    return self.textures.get(hash) orelse return .{ .id = std.math.maxInt(u32) };
+    return self.textures.getPtr(hash) orelse @panic("texture asset not found");
 }
 
-pub fn getModel(self: @This(), key: []const u8) ?gfx.Model {
+pub fn getModel(self: @This(), key: []const u8) *gfx.Model {
     const hash: u64 = std.hash.Wyhash.hash(0, key);
-    return self.models.get(hash);
+    return self.models.getPtr(hash) orelse @panic("model asset not found");
 }
 
-pub fn getSound(self: @This(), key: []const u8) audio.Sound {
+pub fn getSound(self: @This(), key: []const u8) *audio.Sound {
     const hash: u64 = std.hash.Wyhash.hash(0, key);
-    return self.sounds.get(hash) orelse @panic("sound asset not found");
+    return self.sounds.getPtr(hash) orelse @panic("sound asset not found");
 }
 
 fn loadAssets(

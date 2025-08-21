@@ -27,7 +27,7 @@ pub fn main() !void {
 
     const cube = asset_manager.getModel("cube.obj");
 
-    const terrain: @import("Terrain.zig") = try .init(allocator, .{ 100, 100 });
+    const terrain: @import("Terrain.zig") = try .init(allocator, .{ 500, 500 });
     defer terrain.deinit(allocator);
     const terrain_model = try terrain.toModel(allocator);
 
@@ -40,6 +40,7 @@ pub fn main() !void {
         // std.debug.print("FPS: {d:.2}\n", .{1 / delta_time});
 
         pipeline.bind();
+        try free_camera.update(pipeline, window, delta_time);
 
         for (0..100) |i| {
             const f: f32 = @floatFromInt(i);
@@ -54,8 +55,6 @@ pub fn main() !void {
         asset_manager.getTexture("grass.jpg").bind(0);
         try pipeline.setUniform("u_model", .{ .mat4x4 = nz.Transform(f32).toMat4x4(.{}).d });
         terrain_model.draw();
-
-        try free_camera.update(pipeline, window, delta_time);
 
         try gfx_context.present();
 

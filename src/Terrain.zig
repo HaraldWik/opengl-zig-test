@@ -11,9 +11,16 @@ pub fn init(
 ) !@This() {
     const height_map = try allocator.alloc(f32, size[0] * size[1]);
 
-    for (height_map) |*point| {
-        point.* = std.crypto.random.float(f32);
+    const noise_scale = 0.05;
+
+    for (height_map, 0..) |*point, i| {
+        const x: f32 = @floatFromInt(i % size[0]);
+        const y: f32 = @floatFromInt(i / size[0]);
+
+        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10;
     }
+
+    // point.* = std.crypto.random.float(f32) + @as(f32, @floatFromInt(i)) / 1000;
 
     return .{ .size = size, .height_map = height_map };
 }

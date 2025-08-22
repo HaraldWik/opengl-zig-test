@@ -1,0 +1,20 @@
+.{
+    .name = .example,
+    .version = "0.0.0",
+    .fingerprint = 0x6eec9b9fe42f6e65,
+    .minimum_zig_version = "0.15.0-dev.1380+e98aeeb73",
+    .dependencies = .{
+        .engine = .{
+            .path = "../",
+        },
+        .numz = .{
+            .url = "git+https://github.com/HaraldWik/numz#3fe90d57b738e282b4fa8998423168acf989b114",
+            .hash = "numz-0.0.1-V-sGm5RtAAB1cI0O5NbPpNSER3tciAlXW73wue6WmyWe",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

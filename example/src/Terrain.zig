@@ -11,16 +11,14 @@ pub fn init(
 ) !@This() {
     const height_map = try allocator.alloc(f32, size[0] * size[1]);
 
-    const noise_scale = 0.05;
+    const noise_scale = 0.01;
 
     for (height_map, 0..) |*point, i| {
         const x: f32 = @floatFromInt(i % size[0]);
         const y: f32 = @floatFromInt(i / size[0]);
 
-        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10;
+        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10 + std.crypto.random.float(f32);
     }
-
-    // point.* = std.crypto.random.float(f32) + @as(f32, @floatFromInt(i)) / 1000;
 
     return .{ .size = size, .height_map = height_map };
 }
@@ -45,13 +43,14 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
             const i = height_index;
 
             var vertex = [_]f32{
-                @as(f32, @floatFromInt(x)),
+                // Position
+                @floatFromInt(x),
                 height,
-                @as(f32, @floatFromInt(y)),
-
-                @as(f32, @floatFromInt(x)) / @as(f32, @floatFromInt(self.size[0] - 1)),
-                @as(f32, @floatFromInt(y)) / @as(f32, @floatFromInt(self.size[1] - 1)),
-
+                @floatFromInt(y),
+                // UV
+                @as(f32, @floatFromInt(x)) / 10.0,
+                @as(f32, @floatFromInt(y)) / 10.0,
+                // Normal
                 0.0,
                 1.0,
                 0.0,
@@ -92,7 +91,7 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
         }
     }
 
-    return engine.gfx.Model.init(&.{
+    return .init(&.{
         .{ .type = .f32, .count = 3 },
         .{ .type = .f32, .count = 2 },
         .{ .type = .f32, .count = 3 },

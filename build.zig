@@ -29,8 +29,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).module("numz");
 
-    const engine = b.createModule(.{
-        .root_source_file = b.path("src/engine/root.zig"),
+    const mod = b.addModule("engine", .{
+        .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -39,41 +39,15 @@ pub fn build(b: *std.Build) void {
             .{ .name = "numz", .module = numz_mod },
         },
     });
-    engine.linkSystemLibrary("SDL3_image", .{});
+    mod.linkSystemLibrary("SDL3_image", .{});
+    mod.linkSystemLibrary("SDL3", .{});
 
-    const exe = b.addExecutable(.{
-        .name = "opengl_zig_test",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "engine", .module = engine },
-                .{ .name = "numz", .module = numz_mod },
-            },
-        }),
-    });
-    exe.linkSystemLibrary("SDL3");
-
-    b.installArtifact(exe);
-
-    const run_step = b.step("run", "Run the app");
-
-    const run_cmd = b.addRunArtifact(exe);
-    run_step.dependOn(&run_cmd.step);
-
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
-
-    const exe_tests = b.addTest(.{
-        .root_module = exe.root_module,
+    const mod_tests = b.addTest(.{
+        .root_module = mod,
     });
 
-    const run_exe_tests = b.addRunArtifact(exe_tests);
+    const run_mod_tests = b.addRunArtifact(mod_tests);
 
     const test_step = b.step("test", "Run tests");
-    test_step.dependOn(&run_exe_tests.step);
+    test_step.dependOn(&run_mod_tests.step);
 }

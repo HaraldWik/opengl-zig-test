@@ -1,7 +1,7 @@
 const std = @import("std");
 const audio = @import("audio.zig");
 const gfx = @import("gfx.zig");
-const img = @cImport(@cInclude("SDL3_image/SDL_image.h")); // TODO: remove C import, for more information read 'build.zig'
+const img = @cImport(@cInclude("SDL3_image/SDL_image.h")); // TODO: remove c import, for more information read 'build.zig'
 const Obj = @import("Obj.zig");
 
 textures: std.AutoArrayHashMapUnmanaged(u64, gfx.Texture),
@@ -28,7 +28,7 @@ pub fn deinit(self: @This()) void {
 }
 
 pub fn loadTexture(_: std.mem.Allocator, _: ?*anyopaque, file_path: []const u8) !gfx.Texture {
-    const surface = img.IMG_Load(@ptrCast(file_path)) orelse return error.LoadImage; // TODO: Change out image loading liberary
+    const surface = img.IMG_Load(@ptrCast(file_path)) orelse return error.LoadImage; // TODO: Change out image loading library
     const texture: gfx.Texture = try .init(@ptrCast(surface.*.pixels.?), @intCast(surface.*.w), @intCast(surface.*.h));
 
     return texture;

@@ -48,8 +48,8 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
                 height,
                 @floatFromInt(y),
                 // UV
-                @as(f32, @floatFromInt(x)) / 10.0,
-                @as(f32, @floatFromInt(y)) / 10.0,
+                @as(f32, @floatFromInt(x)) / 40.0,
+                @as(f32, @floatFromInt(y)) / 40.0,
                 // Normal
                 0.0,
                 1.0,

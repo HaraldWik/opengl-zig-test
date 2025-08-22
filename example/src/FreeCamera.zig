@@ -72,10 +72,10 @@ pub fn update(
         self.transform.position = .{ 0, 0, 0 };
     }
 
-    var view: nz.Mat4x4(f32) = .identity(1);
-    view = view.mul(.rotate(std.math.degreesToRadians(pitch.*), .{ 1, 0, 0 }));
-    view = view.mul(.rotate(std.math.degreesToRadians(yaw.*), .{ 0, 1, 0 }));
-    view = view.mul(.translate(self.transform.position));
+    const view: nz.Mat4x4(f32) = nz.Mat4x4(f32).identity(1)
+        .mul(.rotate(std.math.degreesToRadians(pitch.*), .{ 1, 0, 0 }))
+        .mul(.rotate(std.math.degreesToRadians(yaw.*), .{ 0, 1, 0 }))
+        .mul(.translate(self.transform.position));
 
     const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try app.window.getAspect(), 1, 500.0);
 

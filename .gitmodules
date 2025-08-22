@@ -1,0 +1,3 @@
+[submodule "include/nuklear"]
+	path = include/nuklear
+	url = https://github.com/Immediate-Mode-UI/Nuklear.git

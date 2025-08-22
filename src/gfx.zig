@@ -1,30 +1,39 @@
 const std = @import("std");
-const c = @import("c");
+const sdl = @import("sdl");
 const gl = @import("gl");
+const sdlCheck = @import("root.zig").sdlCheck;
 
 pub const Context = struct {
-    window: ?*c.SDL_Window,
+    window: ?*sdl.SDL_Window,
     var procs: gl.ProcTable = undefined;
 
-    pub fn init(window: ?*c.SDL_Window) !@This() {
+    pub fn init(window: ?*sdl.SDL_Window) !@This() {
         if (!procs.init(getProcAddress)) return error.InitFailed;
         gl.makeProcTableCurrent(&procs);
 
-        if (!c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MAJOR_VERSION, 4) or
-            !c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MINOR_VERSION, 6) or
-            !c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_PROFILE_MASK, c.SDL_GL_CONTEXT_PROFILE_CORE) or
-            !c.SDL_GL_SetAttribute(c.SDL_GL_DEPTH_SIZE, 100) or
-            !c.SDL_GL_SetAttribute(c.SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1))
-            return error.SdlSetOpenGLAttribute;
+        const options: []const struct { comptime_int, comptime_int } = &.{
+            .{ sdl.SDL_GL_CONTEXT_MAJOR_VERSION, 4 },
+            .{ sdl.SDL_GL_CONTEXT_MINOR_VERSION, 6 },
+            .{ sdl.SDL_GL_CONTEXT_PROFILE_MASK, sdl.SDL_GL_CONTEXT_PROFILE_CORE },
+            .{ sdl.SDL_GL_DEPTH_SIZE, 100 },
+            .{ sdl.SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1 },
+            .{ sdl.SDL_GL_DOUBLEBUFFER, 1 },
+            .{ sdl.SDL_GL_STENCIL_SIZE, 8 },
+        };
 
-        _ = c.SDL_GL_CreateContext(window);
+        inline for (options) |option| {
+            try sdlCheck(sdl.SDL_GL_SetAttribute(option.@"0", option.@"1"));
+        }
+
+        const gl_ctx = sdl.SDL_GL_CreateContext(window);
+        try sdlCheck(sdl.SDL_GL_MakeCurrent(window, gl_ctx));
 
         return .{ .window = window };
     }
 
     pub fn deinit(_: @This()) void {
-        const gl_context = c.SDL_GL_GetCurrentContext();
-        _ = c.SDL_GL_DestroyContext(gl_context);
+        const gl_context = sdl.SDL_GL_GetCurrentContext();
+        _ = sdl.SDL_GL_DestroyContext(gl_context);
 
         gl.makeProcTableCurrent(null);
     }
@@ -32,7 +41,7 @@ pub const Context = struct {
     pub fn clear(self: @This()) !void {
         var width: c_int = undefined;
         var height: c_int = undefined;
-        if (!c.SDL_GetWindowSize(self.window, &width, &height)) return error.SdlGetWindowSize;
+        if (!sdl.SDL_GetWindowSize(self.window, &width, &height)) return error.SdlGetWindowSize;
         gl.Viewport(0, 0, width, height);
         gl.Enable(gl.FRAMEBUFFER_SRGB);
         gl.Enable(gl.DEPTH_TEST);
@@ -43,11 +52,11 @@ pub const Context = struct {
     }
 
     pub fn present(self: @This()) !void {
-        if (!c.SDL_GL_SwapWindow(self.window)) return error.SdlOpenGlSwapWindow;
+        if (!sdl.SDL_GL_SwapWindow(self.window)) return error.SdlOpenGlSwapWindow;
     }
 
     fn getProcAddress(name: [*:0]const u8) ?gl.PROC {
-        return @ptrCast(@alignCast(c.SDL_GL_GetProcAddress(std.mem.span(name))));
+        return @ptrCast(@alignCast(sdl.SDL_GL_GetProcAddress(std.mem.span(name))));
     }
 };
 
@@ -124,7 +133,7 @@ pub const Pipeline = struct {
             .f64x3 => |d| gl.ProgramUniform3d(self.program, location, d[0], d[1], d[2]),
             .f32x4 => |d| gl.ProgramUniform4f(self.program, location, d[0], d[1], d[2], d[3]),
             .f64x4 => |d| gl.ProgramUniform4d(self.program, location, d[0], d[1], d[2], d[3]),
-            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, c.false, @ptrCast(&d)),
+            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, sdl.false, @ptrCast(&d)),
         }
     }
 

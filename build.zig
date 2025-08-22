@@ -8,7 +8,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .lto = optimize != .Debug,
-        .preferred_linkage = .dynamic,
+        .preferred_linkage = .static,
     });
     const sdl_translate_c = b.addTranslateC(.{
         .root_source_file = sdl.path("include/SDL3/SDL.h"),
@@ -34,7 +34,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
-            .{ .name = "c", .module = sdl_translate_c.createModule() },
+            .{ .name = "sdl", .module = sdl_translate_c.createModule() },
             .{ .name = "gl", .module = gl_bindings },
             .{ .name = "numz", .module = numz_mod },
         },

@@ -1,12 +1,14 @@
-pub const c = @import("c");
 pub const AssetManager = @import("AssetManager.zig");
+pub const App = @import("App.zig");
+pub const Obj = @import("Obj.zig");
+pub const Key = @import("App.zig").Key;
+
 pub const audio = @import("audio.zig");
 pub const gfx = @import("gfx.zig");
-pub const Obj = @import("Obj.zig");
-pub const Window = @import("window.zig");
-pub const Key = @import("window.zig").Key;
+pub const ui = @import("ui.zig");
 
-const nz = @import("numz");
+pub const sdl = @import("sdl");
+pub const gl = @import("gl");
 
 pub fn sdlCheck(result: anytype) !void {
     if (!switch (@typeInfo(@TypeOf(result))) {
@@ -15,6 +17,6 @@ pub fn sdlCheck(result: anytype) !void {
         else => @compileError("unsupported type for sdl check"),
     }) return;
 
-    @import("std").log.err("sdl: {s}\n", .{c.SDL_GetError()});
+    @import("std").log.err("sdl: {s}\n", .{sdl.SDL_GetError()});
     return error.Sdl;
 }

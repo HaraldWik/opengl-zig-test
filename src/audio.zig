@@ -1,37 +1,37 @@
 const std = @import("std");
-const c = @import("c");
+const sdl = @import("sdl");
 const sdlCheck = @import("root.zig").sdlCheck;
 
 pub const Device = struct {
-    id: c.SDL_AudioDeviceID,
+    id: sdl.SDL_AudioDeviceID,
 
     pub fn init() !@This() {
-        const device_id = c.SDL_OpenAudioDevice(c.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, null);
+        const device_id = sdl.SDL_OpenAudioDevice(sdl.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, null);
         try sdlCheck(device_id != 0);
 
         return .{ .id = device_id };
     }
 
     pub fn deinit(self: @This()) void {
-        c.SDL_CloseAudioDevice(self.id);
+        sdl.SDL_CloseAudioDevice(self.id);
     }
 };
 
 pub const Sound = struct {
     device: Device,
-    streams: []?*c.SDL_AudioStream,
-    spec: c.SDL_AudioSpec,
+    streams: []?*sdl.SDL_AudioStream,
+    spec: sdl.SDL_AudioSpec,
     ptr: [*]u8,
     len: usize,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, device: Device, file_path: [*:0]const u8) !@This() {
-        var spec: c.SDL_AudioSpec = undefined;
+        var spec: sdl.SDL_AudioSpec = undefined;
         var ptr: [*]u8 = undefined;
         var len: u32 = undefined;
-        try sdlCheck(c.SDL_LoadWAV(file_path, &spec, @ptrCast(&ptr), &len));
+        try sdlCheck(sdl.SDL_LoadWAV(file_path, &spec, @ptrCast(&ptr), &len));
 
-        const streams = try allocator.alloc(?*c.SDL_AudioStream, 16);
+        const streams = try allocator.alloc(?*sdl.SDL_AudioStream, 16);
         @memset(streams, null);
 
         return .{
@@ -46,34 +46,34 @@ pub const Sound = struct {
 
     pub fn deinit(self: @This()) void {
         for (self.streams) |stream| {
-            if (stream != null) c.SDL_DestroyAudioStream(stream.?);
+            if (stream != null) sdl.SDL_DestroyAudioStream(stream.?);
         }
         self.allocator.free(self.streams);
-        c.SDL_free(@ptrCast(self.ptr));
+        sdl.SDL_free(@ptrCast(self.ptr));
     }
 
     pub fn play(self: @This(), volume: f32) !void {
-        var free_stream: ?*c.SDL_AudioStream = null;
+        var free_stream: ?*sdl.SDL_AudioStream = null;
 
         for (self.streams) |*stream| {
             const current_stream = stream.*;
             if (current_stream == null) {
-                const new_stream = c.SDL_CreateAudioStream(&self.spec, null);
+                const new_stream = sdl.SDL_CreateAudioStream(&self.spec, null);
                 try sdlCheck(new_stream);
-                try sdlCheck(c.SDL_BindAudioStream(self.device.id, new_stream));
+                try sdlCheck(sdl.SDL_BindAudioStream(self.device.id, new_stream));
                 stream.* = new_stream;
                 free_stream = new_stream;
                 break;
             }
-            if (c.SDL_GetAudioStreamAvailable(current_stream) == 0) {
+            if (sdl.SDL_GetAudioStreamAvailable(current_stream) == 0) {
                 free_stream = current_stream;
                 break;
             }
         }
 
         if (free_stream) |stream| {
-            _ = c.SDL_SetAudioStreamGain(stream, volume);
-            try sdlCheck(c.SDL_PutAudioStreamData(stream, @ptrCast(self.ptr), @intCast(self.len)));
+            _ = sdl.SDL_SetAudioStreamGain(stream, volume);
+            try sdlCheck(sdl.SDL_PutAudioStreamData(stream, @ptrCast(self.ptr), @intCast(self.len)));
         }
     }
 };

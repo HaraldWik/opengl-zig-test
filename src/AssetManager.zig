@@ -79,14 +79,21 @@ fn loadAssets(
     var hash_map: std.AutoArrayHashMapUnmanaged(u64, Asset) = .empty;
 
     const files = try findAssetsFromDir(allocator, dir_path, extension);
+    defer allocator.free(files);
+
     for (files) |file| {
-        const file_path = try std.fs.path.join(allocator, &.{ dir_path, file });
-        const asset = try func(allocator, user_data, file_path);
+        defer allocator.free(file);
 
-        const hash: u64 = std.hash.Wyhash.hash(0, file);
-        try hash_map.put(allocator, hash, asset);
+        {
+            const file_path = try std.fs.path.join(allocator, &.{ dir_path, file });
+            defer allocator.free(file_path);
+
+            const asset = try func(allocator, user_data, file_path);
+
+            const hash: u64 = std.hash.Wyhash.hash(0, file);
+            try hash_map.put(allocator, hash, asset);
+        }
     }
-
     return hash_map;
 }
 
@@ -101,7 +108,6 @@ fn findAssetsFromDir(allocator: std.mem.Allocator, dir_path: []const u8, extensi
     while (try it.next()) |entry| {
         if (entry.kind == .file and std.mem.eql(u8, std.fs.path.extension(entry.name), extension)) {
             const name = try allocator.dupe(u8, entry.name);
-            errdefer allocator.free(name);
             try assets.append(allocator, name);
         }
     }

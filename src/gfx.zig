@@ -303,7 +303,7 @@ pub const Camera = struct {
             .{ 0.0, 1.0, 0.0 },
         );
 
-        const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), aspect, 1, 500.0);
+        const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), aspect, 1.0, 10000.0);
 
         try pipeline.setUniform(config.uniform, .{ .mat4x4 = projection.mul(view).d });
     }

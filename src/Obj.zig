@@ -12,18 +12,19 @@ pub fn init(
     var file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
 
-    const tok_buffer = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
-    var lines = std.mem.tokenizeAny(u8, tok_buffer, "\n");
+    const source = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    defer allocator.free(source);
+    var lines = std.mem.tokenizeAny(u8, source, "\n");
 
-    var positions: std.ArrayListUnmanaged(f32) = .empty;
+    var positions: std.ArrayListUnmanaged(f32) = try .initCapacity(allocator, @divTrunc(source.len, 3));
     defer positions.deinit(allocator);
-    var uvs: std.ArrayListUnmanaged(f32) = .empty;
+    var uvs: std.ArrayListUnmanaged(f32) = try .initCapacity(allocator, @divTrunc(source.len, 3));
     defer uvs.deinit(allocator);
-    var normals: std.ArrayListUnmanaged(f32) = .empty;
+    var normals: std.ArrayListUnmanaged(f32) = try .initCapacity(allocator, @divTrunc(source.len, 3));
     defer normals.deinit(allocator);
 
-    var vertices: std.ArrayListUnmanaged(f32) = .empty;
-    var indices: std.ArrayListUnmanaged(u32) = .empty;
+    var vertices: std.ArrayListUnmanaged(f32) = try .initCapacity(allocator, source.len);
+    var indices: std.ArrayListUnmanaged(u32) = try .initCapacity(allocator, @divTrunc(source.len, 4));
 
     var vertex_count: u32 = 0;
 

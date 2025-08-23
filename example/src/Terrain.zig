@@ -11,13 +11,13 @@ pub fn init(
 ) !@This() {
     const height_map = try allocator.alloc(f32, size[0] * size[1]);
 
-    const noise_scale = 0.01;
+    // const noise_scale = 0.01;
 
     for (height_map, 0..) |*point, i| {
         const x: f32 = @floatFromInt(i % size[0]);
         const y: f32 = @floatFromInt(i / size[0]);
 
-        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10 + (std.crypto.random.float(f32) * 0.25);
+        point.* = (@sin(x / 25) + @sin(y / 25)) * 10; // @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 100 + (std.crypto.random.float(f32) * 0.35);
     }
 
     return .{ .size = size, .height_map = height_map };

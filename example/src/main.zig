@@ -4,7 +4,9 @@ const nz = @import("numz");
 const gl = @import("gl");
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{ .verbose_log = true }){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
     const app: engine.App = try .init("Application", 900, 900);
     defer app.deinit();

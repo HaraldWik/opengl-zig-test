@@ -8,8 +8,8 @@
             .path = "../",
         },
         .numz = .{
-            .url = "git+https://github.com/HaraldWik/numz#3fe90d57b738e282b4fa8998423168acf989b114",
-            .hash = "numz-0.0.1-V-sGm5RtAAB1cI0O5NbPpNSER3tciAlXW73wue6WmyWe",
+            .url = "git+https://github.com/HaraldWik/numz#4ef40bc163c12064bd9331fc8433cf931f9ca5a2",
+            .hash = "numz-0.0.1-V-sGm-ZtAABytgHnzRoB-TrHa6H2GZDaE5vKjdTb8ZlZ",
         },
     },
     .paths = .{

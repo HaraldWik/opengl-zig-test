@@ -26,9 +26,9 @@ pub fn main() !void {
     const pipeline: engine.gfx.Pipeline = try .init(@embedFile("shaders/def.vert"), @embedFile("shaders/def.frag"), null);
     defer pipeline.deinit();
 
-    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.15, .speed = 120, .transform = .{ .position = .{ 0.0, 0.0, -5.0 } } };
+    var free_camera: @import("FreeCamera.zig") = .{ .sensitivity = 0.0015, .speed = 120, .transform = .{ .position = .{ 0.0, 0.0, -5.0 } } };
 
-    const terrain: @import("Terrain.zig") = try .init(allocator, .{ 500, 500 });
+    const terrain: @import("Terrain.zig") = try .init(allocator, .{ 1000, 1000 });
     defer terrain.deinit(allocator);
     const terrain_model = try terrain.toModel(allocator);
 
@@ -69,6 +69,8 @@ pub fn main() !void {
             volume = @max(0, volume);
             try asset_manager.getSound("bell.wav").play(volume);
         }
+
+        // std.debug.print("{}\n", .{free_camera.transform});
 
         // std.debug.print("{d:.1}%\n", .{volume * 100});
     }

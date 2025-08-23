@@ -28,31 +28,33 @@ const p = [_]u8{
 };
 
 pub fn noise(x: f32, y: f32) f32 {
-    const X = @as(usize, @intFromFloat(std.math.floor(x))) & 255;
-    const Y = @as(usize, @intFromFloat(std.math.floor(y))) & 255;
-    const x_fract = x - std.math.floor(x);
-    const y_fract = y - std.math.floor(y);
+    const floor_x = std.math.floor(x);
+    const floor_y = std.math.floor(y);
+    const X = @as(u8, @intFromFloat(@mod(@abs(floor_x), 256.0)));
+    const Y = @as(u8, @intFromFloat(@mod(@abs(floor_y), 256.0)));
 
-    const u = x_fract * x_fract * x_fract * (x_fract * (x_fract * 6 - 15) + 10);
-    const v = y_fract * y_fract * y_fract * (y_fract * (y_fract * 6 - 15) + 10);
+    const x_fract = x - floor_x;
+    const y_fract = y - floor_y;
 
-    const A = p[X] + Y;
-    const B = p[X + 1] + Y;
+    const u = x_fract * x_fract * x_fract * (x_fract * (x_fract * 6.0 - 15.0) + 10.0);
+    const v = y_fract * y_fract * y_fract * (y_fract * (y_fract * 6.0 - 15.0) + 10.0);
 
-    const A_idx = p[A & 255];
-    const B_idx = p[B & 255];
-    const AA = p[A_idx];
-    const AB = p[A_idx + 1];
-    const BA = p[B_idx];
-    const BB = p[B_idx + 1];
+    const A = p[X] +% Y;
+    const B = p[X +% 1] +% Y;
+    const a_idx = p[A & 255];
+    const b_idx = p[B & 255];
+    const aa = p[a_idx];
+    const ab = p[a_idx + 1];
+    const ba = p[b_idx];
+    const bb = p[b_idx + 1];
 
-    const grad_AA = grad(AA, x_fract, y_fract);
-    const grad_BA = grad(BA, x_fract - 1, y_fract);
-    const grad_AB = grad(AB, x_fract, y_fract - 1);
-    const grad_BB = grad(BB, x_fract - 1, y_fract - 1);
+    const grad_aa = grad(aa, x_fract, y_fract);
+    const grad_ba = grad(ba, x_fract - 1.0, y_fract);
+    const grad_ab = grad(ab, x_fract, y_fract - 1.0);
+    const grad_bb = grad(bb, x_fract - 1.0, y_fract - 1.0);
 
-    const lerp_x1 = (1 - u) * grad_AA + u * grad_BA;
-    const lerp_x2 = (1 - u) * grad_AB + u * grad_BB;
+    const lerp_x1 = (1.0 - u) * grad_aa + u * grad_ba;
+    const lerp_x2 = (1.0 - u) * grad_ab + u * grad_bb;
 
-    return ((1 - v) * lerp_x1 + v * lerp_x2);
+    return ((1.0 - v) * lerp_x1 + v * lerp_x2);
 }

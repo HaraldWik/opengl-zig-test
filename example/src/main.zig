@@ -41,11 +41,14 @@ pub fn main() !void {
         // std.debug.print("FPS: {d:.2}\n", .{1 / delta_time});
 
         pipeline.bind();
-        try free_camera.update(pipeline, app, delta_time);
+        const height: f32 = terrain.get(std.math.lossyCast(usize, free_camera.transform.position[0]), std.math.lossyCast(usize, free_camera.transform.position[2])) orelse 0;
+        try free_camera.update(app, delta_time);
+        free_camera.transform.position[1] = height + 2; //@max(height + 3, free_camera.transform.position[1]);
+        try engine.gfx.Camera.bind(pipeline, free_camera.transform, try app.window.getAspect(), .{});
 
         for (0..100) |i| {
             const f: f32 = @floatFromInt(i);
-            var transform: nz.Transform(f32) = .{ .position = .{ std.math.round(@mod(f, 10) * 3), @sin(time + f), std.math.round(f / 10 * 3) } };
+            var transform: nz.Transform(f32) = .{ .position = .{ std.math.round(@mod(f, 10) * 3), @sin(time + f), @cos(time + f * 2) + std.math.round(f / 10 * 3) } };
 
             transform.rotation = @splat(@mod(transform.rotation[1] + 30 * app.getDeltaTime(), 360));
             asset_manager.getTexture("error_wall.jpg").bind(0);

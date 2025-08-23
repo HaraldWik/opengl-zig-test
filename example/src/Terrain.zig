@@ -17,7 +17,7 @@ pub fn init(
         const x: f32 = @floatFromInt(i % size[0]);
         const y: f32 = @floatFromInt(i / size[0]);
 
-        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10 + std.crypto.random.float(f32);
+        point.* = @import("noise.zig").noise(x * noise_scale, y * noise_scale) * 10 + (std.crypto.random.float(f32) * 0.25);
     }
 
     return .{ .size = size, .height_map = height_map };
@@ -25,6 +25,14 @@ pub fn init(
 
 pub fn deinit(self: @This(), allocator: std.mem.Allocator) void {
     allocator.free(self.height_map);
+}
+
+pub fn get(self: @This(), x: usize, y: usize) ?f32 {
+    if (x >= self.size[0] or y >= self.size[1]) return null;
+
+    const index: usize = x + y * self.size[0];
+
+    return self.height_map[index];
 }
 
 pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {

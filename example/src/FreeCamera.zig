@@ -7,9 +7,10 @@ sensitivity: f32,
 speed: f32,
 was_rotating: bool = false,
 
+camera: engine.gfx.Camera = .{},
+
 pub fn update(
     self: *@This(),
-    pipeline: engine.gfx.Pipeline,
     app: engine.App,
     delta_time: f32,
 ) !void {
@@ -60,15 +61,4 @@ pub fn update(
         pitch.* = 0;
         self.transform.position = .{ 0, 0, 0 };
     }
-
-    const view: nz.Mat4x4(f32) = .lookAt(
-        self.transform.position,
-        self.transform.position + nz.Vec3(f32){ @cos(yaw.*) * @cos(pitch.*), @sin(pitch.*), @sin(yaw.*) * @cos(pitch.*) },
-        .{ 0.0, 1.0, 0.0 },
-    );
-
-    const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), try app.window.getAspect(), 1, 500.0);
-
-    try pipeline.setUniform("u_projection", .{ .mat4x4 = projection.d });
-    try pipeline.setUniform("u_view", .{ .mat4x4 = view.d });
 }

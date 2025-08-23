@@ -1,7 +1,8 @@
 const std = @import("std");
-const sdl = @import("sdl");
 const gl = @import("gl");
+const sdl = @import("sdl");
 const sdlCheck = @import("root.zig").sdlCheck;
+const nz = @import("numz");
 
 pub const Context = struct {
     window: ?*sdl.SDL_Window,
@@ -117,7 +118,7 @@ pub const Pipeline = struct {
         gl.UseProgram(self.program);
     }
 
-    pub fn setUniform(self: @This(), name: [:0]const u8, data: Uniform) !void {
+    pub fn setUniform(self: @This(), name: [*:0]const u8, data: Uniform) !void {
         const location = gl.GetUniformLocation(self.program, name);
         if (location == -1) return error.UniformNotFound;
 
@@ -133,7 +134,7 @@ pub const Pipeline = struct {
             .f64x3 => |d| gl.ProgramUniform3d(self.program, location, d[0], d[1], d[2]),
             .f32x4 => |d| gl.ProgramUniform4f(self.program, location, d[0], d[1], d[2], d[3]),
             .f64x4 => |d| gl.ProgramUniform4d(self.program, location, d[0], d[1], d[2], d[3]),
-            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, sdl.false, @ptrCast(&d)),
+            .mat4x4 => |d| gl.ProgramUniformMatrix4fv(self.program, location, 1, gl.FALSE, @ptrCast(&d)),
         }
     }
 
@@ -286,5 +287,24 @@ pub const Texture = struct {
     pub fn bind(self: @This(), slot: u32) void {
         gl.ActiveTexture(@intCast(gl.TEXTURE0 + slot));
         gl.BindTexture(gl.TEXTURE_2D, self.id);
+    }
+};
+
+pub const Camera = struct {
+    pub const Config = struct {
+        projection: enum { perspective, orthographic } = .perspective,
+        uniform: [*:0]const u8 = "u_camera",
+    };
+
+    pub fn bind(pipeline: Pipeline, transform: nz.Transform(f32), aspect: f32, config: Config) !void {
+        const view: nz.Mat4x4(f32) = .lookAt(
+            transform.position,
+            transform.position + nz.Vec3(f32){ @cos(transform.rotation[1]) * @cos(transform.rotation[0]), @sin(transform.rotation[0]), @sin(transform.rotation[1]) * @cos(transform.rotation[0]) },
+            .{ 0.0, 1.0, 0.0 },
+        );
+
+        const projection: nz.Mat4x4(f32) = .perspective(std.math.degreesToRadians(45.0), aspect, 1, 500.0);
+
+        try pipeline.setUniform(config.uniform, .{ .mat4x4 = projection.mul(view).d });
     }
 };

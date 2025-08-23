@@ -38,9 +38,27 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
 
     for (0..self.size[1]) |y| {
         for (0..self.size[0]) |x| {
-            const height_index = y * self.size[0] + x;
-            const height = self.height_map[height_index];
-            const i = height_index;
+            const i = y * self.size[0] + x;
+            const height = self.height_map[i];
+
+            const normal: nz.Vec3(f32) = blk: {
+                const next_x_index = @min(x +| 1, self.size[0] - 1);
+                const prev_x_index = @max(x -| 1, 0);
+                const next_y_index = @min(y +| 1, self.size[1] - 1);
+                const prev_y_index = @max(y -| 1, 0);
+
+                const next_x_height = self.height_map[y * self.size[0] + next_x_index];
+                const prev_x_height = self.height_map[y * self.size[0] + prev_x_index];
+                const next_y_height = self.height_map[next_y_index * self.size[0] + x];
+                const prev_y_height = self.height_map[prev_y_index * self.size[0] + x];
+
+                const delta_x = next_x_height - prev_x_height;
+                const delta_y = next_y_height - prev_y_height;
+
+                const vector = nz.Vec3(f32){ -delta_x, 1.0, -delta_y };
+
+                break :blk nz.vec.normalize(vector);
+            };
 
             var vertex = [_]f32{
                 // Position
@@ -51,9 +69,9 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
                 @as(f32, @floatFromInt(x)) / 40.0,
                 @as(f32, @floatFromInt(y)) / 40.0,
                 // Normal
-                0.0,
-                1.0,
-                0.0,
+                normal[0],
+                normal[1],
+                normal[2],
             };
 
             @memcpy(vertices[i * vertex.len .. i * vertex.len + vertex.len], vertex[0..]);
@@ -63,29 +81,21 @@ pub fn toModel(self: @This(), allocator: std.mem.Allocator) !engine.gfx.Model {
     var i: usize = 0;
     for (0..self.size[1] - 1) |y| {
         for (0..self.size[0] - 1) |x| {
-            const top_left = @as(u32, @intCast(y * self.size[0] + x));
-            const top_right = @as(u32, @intCast(y * self.size[0] + x + 1));
-            const bottom_left = @as(u32, @intCast((y + 1) * self.size[0] + x));
-            const bottom_right = @as(u32, @intCast((y + 1) * self.size[0] + x + 1));
+            const top_left: u32 = @intCast(y * self.size[0] + x);
+            const top_right: u32 = @intCast(y * self.size[0] + x + 1);
+            const bottom_left: u32 = @intCast((y + 1) * self.size[0] + x);
+            const bottom_right: u32 = @intCast((y + 1) * self.size[0] + x + 1);
 
-            // First triangle
-            indices[i + 0] = top_left;
-            indices[i + 1] = bottom_left;
-            indices[i + 2] = top_right;
+            var index = [_]u32{
+                top_left,
+                bottom_left,
+                top_right,
+                top_right,
+                bottom_left,
+                bottom_right,
+            };
 
-            // Second triangle
-            indices[i + 3] = top_right;
-            indices[i + 4] = bottom_left;
-            indices[i + 5] = bottom_right;
-
-            // var index = [_]u32{
-            //     @intCast(y * self.size[0] + x),
-            //     @intCast(y * self.size[0] + x + 1),
-            //     @intCast((y + 1) * self.size[0] + x),
-            //     @intCast((y + 1) * self.size[0] + x + 1),
-            // };
-
-            // @memcpy(indices[i * index.len .. i * index.len + index.len], index[0..]);
+            @memcpy(indices[i .. i + index.len], index[0..]);
 
             i += 6;
         }

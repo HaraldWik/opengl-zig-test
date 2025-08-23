@@ -53,7 +53,7 @@ pub fn main() !void {
             asset_manager.getModel("cube.obj").draw();
         }
 
-        try pipeline.setUniform("u_model", .{ .mat4x4 = nz.Transform(f32).toMat4x4(.{ .position = .{ -10, 20, -10 }, .scale = @splat(10) }).d });
+        try pipeline.setUniform("u_model", .{ .mat4x4 = nz.Transform(f32).toMat4x4(.{ .position = .{ -10, 20, -10 }, .rotation = @splat(@mod(time * 20, 360)), .scale = @splat(10) }).d });
         asset_manager.getModel("teapot.obj").draw();
 
         asset_manager.getTexture("grass.jpg").bind(0);

@@ -2,7 +2,7 @@
     .name = .example,
     .version = "0.0.0",
     .fingerprint = 0x6eec9b9fe42f6e65,
-    .minimum_zig_version = "0.15.0-dev.1380+e98aeeb73",
+    .minimum_zig_version = "0.16.0-dev.13+1594c8055",
     .dependencies = .{
         .engine = .{
             .path = "../",

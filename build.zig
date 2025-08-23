@@ -17,14 +17,29 @@ pub fn build(b: *std.Build) void {
     });
     sdl_translate_c.addIncludePath(sdl.path("include"));
 
-    const gl_bindings = @import("zigglgen").generateBindingsModule(b, .{
+    const gl = @import("zigglgen").generateBindingsModule(b, .{
         .api = .gl,
         .version = .@"4.6",
         .profile = .core,
         .extensions = &.{ .ARB_clip_control, .NV_scissor_exclusive },
     });
 
-    const numz_mod = b.dependency("numz", .{
+    // const nuklear = b.addTranslateC(.{
+    //     .root_source_file = b.path("include/nuklear/nuklear.h"),
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
+    // nuklear.defineCMacro("NK_INCLUDE_FIXED_TYPES", "1");
+    // nuklear.defineCMacro("NK_INCLUDE_STANDARD_IO", "1");
+    // nuklear.defineCMacro("NK_INCLUDE_DEFAULT_ALLOCATOR", "1");
+    // nuklear.defineCMacro("NK_INCLUDE_VERTEX_BUFFER_OUTPUT", "1");
+    // nuklear.defineCMacro("NK_INCLUDE_FONT_BAKING", "1");
+    // nuklear.defineCMacro("NK_INCLUDE_DEFAULT_FONT", "1");
+    // nuklear.defineCMacro("NK_IMPLEMENTATION", "1");
+    // nuklear.defineCMacro("NK_SDL_GL3_IMPLEMENTATION", "1");
+    // nuklear.defineCMacro("NK_SHADER_VERSION", "#version 460 core\n");
+
+    const numz = b.dependency("numz", .{
         .target = target,
         .optimize = optimize,
     }).module("numz");
@@ -35,8 +50,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "sdl", .module = sdl_translate_c.createModule() },
-            .{ .name = "gl", .module = gl_bindings },
-            .{ .name = "numz", .module = numz_mod },
+            .{ .name = "gl", .module = gl },
+            // .{ .name = "nuklear", .module = nuklear.createModule() },
+            .{ .name = "numz", .module = numz },
         },
     });
     mod.linkSystemLibrary("SDL3_image", .{});

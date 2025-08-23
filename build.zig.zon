@@ -1,8 +1,8 @@
 .{
     .name = .opengl_zig_test,
-    .version = "0.0.0",
-    .fingerprint = 0x935d4be3028ff242,
-    .minimum_zig_version = "0.15.0-dev.1380+e98aeeb73",
+    .version = "0.0.1",
+    .minimum_zig_version = "0.16.0-dev.13+1594c8055",
+    .fingerprint = 0x935d4be3af7bb638,
     .dependencies = .{
         .sdl = .{
             .url = "git+https://github.com/castholm/SDL#1994ca5dbad5a3e3c670a9ab8533d86cfd97bdc0",
@@ -21,7 +21,7 @@
         "build.zig",
         "build.zig.zon",
         "src",
-        "assets",
+        "include",
         "LICENSE",
         "README.md",
     },
